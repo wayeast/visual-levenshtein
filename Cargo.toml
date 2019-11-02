@@ -1,0 +1,10 @@
+[package]
+name = "visual-levenshtein"
+version = "0.1.0"
+authors = ["Huston Bokinsky <huston@deepgram.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+unicode-segmentation = "1.5"
