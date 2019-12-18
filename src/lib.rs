@@ -52,6 +52,10 @@ pub fn levenshtein<'a>(origin: &'a str, dest: &'a str) -> Levenshtein<'a> {
     Levenshtein::new(origin, dest)
 }
 
+pub fn levenshtein_words<'a>(origin: &'a str, dest: &'a str) -> Levenshtein<'a> {
+    Levenshtein::new_words(origin, dest)
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Transformation<'a> {
     Init(usize),
@@ -104,6 +108,22 @@ impl<'a> Levenshtein<'a> {
     fn new(o: &'a str, d: &'a str) -> Self {
         let origin = UnicodeSegmentation::graphemes(o, true).collect::<Vec<&'a str>>();
         let dest = UnicodeSegmentation::graphemes(d, true).collect::<Vec<&'a str>>();
+        let x_dim = origin.len() + 1;
+        let y_dim = dest.len() + 1;
+        let matrix = vec![vec![Transformation::Init(0); y_dim]; x_dim];
+
+        Self {
+            x_dim,
+            y_dim,
+            origin,
+            dest,
+            matrix,
+        }
+    }
+
+    fn new_words(o: &'a str, d: &'a str) -> Self {
+        let origin = UnicodeSegmentation::split_word_bounds(o).collect::<Vec<&'a str>>();
+        let dest = UnicodeSegmentation::split_word_bounds(d).collect::<Vec<&'a str>>();
         let x_dim = origin.len() + 1;
         let y_dim = dest.len() + 1;
         let matrix = vec![vec![Transformation::Init(0); y_dim]; x_dim];
@@ -296,8 +316,20 @@ mod tests {
 
     #[test]
     fn debug() {
-        let mut c = levenshtein("kitten", "sitting");
-        //let mut c = levenshtein("one", "only");
+        //let mut c = levenshtein("kitten", "sitting");
+        let mut c = levenshtein("one", "only");
+        println!("New: {:?}", c);
+        c.initialize();
+        println!("Initialized: {:?}", c);
+        c.calculate_matrix();
+        println!("Calculated: {:?}", c);
+        let transforms = c.raw_edits();
+        println!("Edits: {:?}", transforms);
+    }
+
+    #[test]
+    fn debug_words() {
+        let mut c = levenshtein_words("one too many", "one too much, hey");
         println!("New: {:?}", c);
         c.initialize();
         println!("Initialized: {:?}", c);
